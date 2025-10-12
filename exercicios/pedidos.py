@@ -51,28 +51,36 @@ def extrair_nome(texto: str) -> str:
 
 def boas_vindas_node(state: dict) -> dict:
     state["resposta"] = "Olá! Eu sou o Ana Bot sua assistente de pedidos. Como posso te chamar?"
-    state["etapa"] = "aguardar_nome"
+    state["etapa"] = "identificar_cliente"
     return state
 
 
-# Registro a nome do cliente
+# Registro do nome do cliente
 def identificar_cliente_node(state: dict) -> dict:
     mensagem = (state.get("mensagem_usuario") or "").strip()
+
+    # Caso o usuário não tenha digitado nada
     if not mensagem:
-        state["resposta"] = "Não entendi. Qual é o seu nome?"
-        state["etapa"] = "aguardar_nome"
+        state["resposta"] = "Não entendi. Pode me dizer seu nome, por favor?"
+        state["etapa"] = "identificar_cliente"
         return state
 
     nome = extrair_nome(mensagem)
+
+    # Caso a heurística não identifique um nome válido
     if not nome:
-        state["resposta"] = "Poderia repetir seu nome, por favor?"
-        state["etapa"] = "aguardar_nome"
+        state["resposta"] = "Desculpe, não entendi seu nome. Pode repetir, por favor?"
+        state["etapa"] = "identificar_cliente"
         return state
 
+    # Armazena nome e prepara o próximo passo
     state["nome"] = nome
     state.setdefault("historico", [])
-    state["resposta"] = f"Prazer, {nome}! Como posso ajudar em tecnologia hoje?"
-    state["etapa"] = "responder_perguntas"
+
+    state["resposta"] = (
+        f"Prazer, {nome}! 😊 Já quer dar uma olhada no nosso cardápio? Temos bolos, tortas e bebidas deliciosas!"
+    )
+    state["etapa"] = "escolher_produtos"
     return state
 
 
@@ -224,6 +232,12 @@ def cancelar_pedido_node(state: dict) -> dict:
     state["encerrar"] = True
     return state
 
+
+def roteador_node(state: dict) -> dict:
+# Nó "inócuo" apenas para permitir arestas condicionais
+    return state
+
+
 def proxima_parada(state: dict) -> str:
     """
     Define a próxima etapa do fluxo de acordo com o estado atual do pedido.
@@ -257,6 +271,7 @@ def proxima_parada(state: dict) -> str:
 graph = StateGraph(dict)
 
 # Criar os Nodes
+graph.add_node("roteador", roteador_node)
 graph.add_node("boas_vindas", boas_vindas_node)
 graph.add_node("identificar_cliente", identificar_cliente_node)
 graph.add_node("escolher_produtos", escolher_produtos_node)
@@ -264,17 +279,42 @@ graph.add_node("adicionar_itens_carrinho", adicionar_itens_carrinho_node)
 graph.add_node("finalizar_pedido", finalizar_pedido_node)
 graph.add_node("cancelar_pedido", cancelar_pedido_node)
 
+graph.add_conditional_edges(
+    "roteador",
+    proxima_parada,
+    {
+        "boas_vindas": "boas_vindas",
+        "identificar_cliente": "identificar_cliente",
+        "escolher_produtos": "escolher_produtos",
+        "adicionar_itens_carrinho": "adicionar_itens_carrinho",
+        "finalizar_pedido": "finalizar_pedido",
+        "cancelar_pedido": "cancelar_pedido",
+        "fim": END,
+    },
+)
+
 #Defini as aretas 
-graph.add_edge(START, "boas_vindas")
-graph.add_edge("boas_vindas", "identifica_cliente")
-graph.add_edge("identifica_cliente", "escolher_produtos")
-graph.add_edge("escolher_produtos", "adicionar_itens_carrinho")
-graph.add_edge("adicionar_itens_carrinho", "finalizar_pedido")
+graph.add_edge("boas_vindas", END)
+graph.add_edge("identificar_cliente", END)
+graph.add_edge("escolher_produtos", END)
+graph.add_edge("adicionar_itens_carrinho", END)
 graph.add_edge("finalizar_pedido", END)
 graph.add_edge("cancelar_pedido", END)
 
+
+# graph.add_edge(START, "boas_vindas")
+# graph.add_edge("boas_vindas", "identificar_cliente")
+# graph.add_edge("identificar_cliente", "escolher_produtos")
+# graph.add_edge("escolher_produtos", "adicionar_itens_carrinho")
+# graph.add_edge("adicionar_itens_carrinho", "finalizar_pedido")
+# graph.add_edge("finalizar_pedido", END)
+# graph.add_edge("cancelar_pedido", END)
+
+
+
+
 # Node de partida
-#graph.set_entry_point("boas_vindas")
+graph.set_entry_point("roteador")
 
 # Compila o grafo em um executor (cria um app pronto para .invoke)
 app = graph.compile()
