@@ -197,6 +197,20 @@ graph.set_entry_point("roteador")
 # Compila o grafo em um executor (cria um app pronto para .invoke)
 app = graph.compile()
 
+
+# Imprimir o Grafo
+from IPython.display import Image, display
+try:
+    #display(Image(app.get_graph().draw_mermaid_png()))
+    display(Image(app.get_graph().draw_ascii()))
+    print(app.get_graph().draw_mermaid())
+except Exception as e:
+    # This requires some extra dependencies and is optional
+    print("Ocorreu um erro:", e)
+    pass
+
+
+
 # ============================================================
 # 6. Execução interativa (simulação de uso)
 # ============================================================

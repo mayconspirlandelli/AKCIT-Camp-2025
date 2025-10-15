@@ -311,8 +311,6 @@ graph.add_edge("cancelar_pedido", END)
 # graph.add_edge("cancelar_pedido", END)
 
 
-
-
 # Node de partida
 graph.set_entry_point("roteador")
 
@@ -321,13 +319,16 @@ app = graph.compile()
 
 
 # Imprimir o Grafo
-# from IPython.display import Image, display
-# try:
-#     display(Image(graph.get_graph().draw_mermaid_png()))
-#     print(graph.get_graph().draw_mermaid())
-# except Exception:
-#     # This requires some extra dependencies and is optional
-#     pass
+from IPython.display import Image, display
+try:
+    display(Image(app.get_graph().draw_mermaid_png()))
+    print(app.get_graph().draw_mermaid())
+except Exception as e:
+    # This requires some extra dependencies and is optional
+    print("Ocorreu um erro:", e)
+    pass
+
+
 
 
 
