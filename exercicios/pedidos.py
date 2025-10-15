@@ -5,11 +5,28 @@
 
 import os
 import re
+import ssl
+from time import struct_time
 from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.output_parsers import StrOutputParser
 from langgraph.graph import StateGraph, START, END
+from langgraph.graph.message import add_messages
+from typing import Annotated
+from typing_extensions import TypedDict
+
+
+class State(TypedDict):
+    #messages: Annotated[list, add_messages]
+    resposta: str
+    etapa: str
+    produto_escolhido: str
+    nome: str
+    historico: str
+    encerrar: bool
+    mensagem_usuario: str
+
 
 
 # Carregas chaves
@@ -49,14 +66,14 @@ def extrair_nome(texto: str) -> str:
     return " ".join(partes)
 
 
-def boas_vindas_node(state: dict) -> dict:
+def boas_vindas_node(state: State) -> State: 
     state["resposta"] = "Olá! Eu sou o Ana Bot sua assistente de pedidos. Como posso te chamar?"
     state["etapa"] = "identificar_cliente"
     return state
 
 
 # Registro do nome do cliente
-def identificar_cliente_node(state: dict) -> dict:
+def identificar_cliente_node(state: State) -> State:
     mensagem = (state.get("mensagem_usuario") or "").strip()
 
     # Caso o usuário não tenha digitado nada
@@ -75,7 +92,7 @@ def identificar_cliente_node(state: dict) -> dict:
 
     # Armazena nome e prepara o próximo passo
     state["nome"] = nome
-    state.setdefault("historico", [])
+    #state.setdefault("historico", [])
 
     state["resposta"] = (
         f"Prazer, {nome}! 😊 Já quer dar uma olhada no nosso cardápio? Temos bolos, tortas e bebidas deliciosas!"
@@ -85,7 +102,7 @@ def identificar_cliente_node(state: dict) -> dict:
 
 
 
-def escolher_produtos_node(state: dict) -> dict:
+def escolher_produtos_node(state: State) -> State:
     """
     Permite que o cliente escolha produtos do cardápio.
     Caso o cliente ainda não tenha mencionado nenhum produto, 
@@ -150,7 +167,7 @@ def escolher_produtos_node(state: dict) -> dict:
 
 
 
-def adicionar_itens_carrinho_node(state: dict) -> dict:
+def adicionar_itens_carrinho_node(state: State) -> State:
     """
     Adiciona os itens escolhidos pelo cliente ao carrinho.
     Usa a LLM para responder confirmações e solicitações.
@@ -176,7 +193,8 @@ def adicionar_itens_carrinho_node(state: dict) -> dict:
         return state
 
     # Adiciona itens ao carrinho
-    carrinho = state.setdefault("carrinho", [])
+    #carrinho = state.setdefault("carrinho", [])
+    carrinho = []
     carrinho.append(mensagem)
 
     resposta = qa_chain.invoke({
@@ -190,7 +208,7 @@ def adicionar_itens_carrinho_node(state: dict) -> dict:
 
 
 
-def finalizar_pedido_node(state: dict) -> dict:
+def finalizar_pedido_node(state: State) -> State:
     """
     Finaliza o pedido, exibe um resumo e confirma a conclusão.
     """
@@ -216,7 +234,7 @@ def finalizar_pedido_node(state: dict) -> dict:
     return state
 
 
-def cancelar_pedido_node(state: dict) -> dict:
+def cancelar_pedido_node(state: State) -> State:
     """
     Cancela o pedido atual e encerra a conversa.
     """
@@ -232,13 +250,12 @@ def cancelar_pedido_node(state: dict) -> dict:
     state["encerrar"] = True
     return state
 
-
-def roteador_node(state: dict) -> dict:
+def roteador_node(state: State):
 # Nó "inócuo" apenas para permitir arestas condicionais
     return state
 
 
-def proxima_parada(state: dict) -> str:
+def proxima_parada(state: State):
     """
     Define a próxima etapa do fluxo de acordo com o estado atual do pedido.
     O roteador centraliza a lógica de transição entre os nós do grafo.
@@ -268,10 +285,14 @@ def proxima_parada(state: dict) -> str:
     return "boas_vindas"
 
 # Criar o grafo do agente com múltiplos nós
-graph = StateGraph(dict)
+#graph = StateGraph(dict)
+
+
+# Criar o grafo do agente com múltiplos nós
+graph = StateGraph(State)
 
 # Criar os Nodes
-graph.add_node("roteador", roteador_node)
+#graph.add_node("roteador", roteador_node)
 graph.add_node("boas_vindas", boas_vindas_node)
 graph.add_node("identificar_cliente", identificar_cliente_node)
 graph.add_node("escolher_produtos", escolher_produtos_node)
@@ -279,40 +300,40 @@ graph.add_node("adicionar_itens_carrinho", adicionar_itens_carrinho_node)
 graph.add_node("finalizar_pedido", finalizar_pedido_node)
 graph.add_node("cancelar_pedido", cancelar_pedido_node)
 
-graph.add_conditional_edges(
-    "roteador",
-    proxima_parada,
-    {
-        "boas_vindas": "boas_vindas",
-        "identificar_cliente": "identificar_cliente",
-        "escolher_produtos": "escolher_produtos",
-        "adicionar_itens_carrinho": "adicionar_itens_carrinho",
-        "finalizar_pedido": "finalizar_pedido",
-        "cancelar_pedido": "cancelar_pedido",
-        "fim": END,
-    },
-)
+# graph.add_conditional_edges(
+#     "roteador",
+#     proxima_parada,
+#     {
+#         "boas_vindas": "boas_vindas",
+#         "identificar_cliente": "identificar_cliente",
+#         "escolher_produtos": "escolher_produtos",
+#         "adicionar_itens_carrinho": "adicionar_itens_carrinho",
+#         "finalizar_pedido": "finalizar_pedido",
+#         "cancelar_pedido": "cancelar_pedido",
+#         "fim": END,
+#     },
+# )
 
 #Defini as aretas 
-graph.add_edge("boas_vindas", END)
-graph.add_edge("identificar_cliente", END)
-graph.add_edge("escolher_produtos", END)
-graph.add_edge("adicionar_itens_carrinho", END)
-graph.add_edge("finalizar_pedido", END)
-graph.add_edge("cancelar_pedido", END)
-
-
-# graph.add_edge(START, "boas_vindas")
-# graph.add_edge("boas_vindas", "identificar_cliente")
-# graph.add_edge("identificar_cliente", "escolher_produtos")
-# graph.add_edge("escolher_produtos", "adicionar_itens_carrinho")
-# graph.add_edge("adicionar_itens_carrinho", "finalizar_pedido")
+# graph.add_edge("boas_vindas", END)
+# graph.add_edge("identificar_cliente", END)
+# graph.add_edge("escolher_produtos", END)
+# graph.add_edge("adicionar_itens_carrinho", END)
 # graph.add_edge("finalizar_pedido", END)
 # graph.add_edge("cancelar_pedido", END)
 
 
+graph.add_edge(START, "boas_vindas")
+graph.add_edge("boas_vindas", "identificar_cliente")
+graph.add_edge("identificar_cliente", "escolher_produtos")
+graph.add_edge("escolher_produtos", "adicionar_itens_carrinho")
+graph.add_edge("adicionar_itens_carrinho", "finalizar_pedido")
+graph.add_edge("finalizar_pedido", END)
+graph.add_edge("cancelar_pedido", END)
+
+
 # Node de partida
-graph.set_entry_point("roteador")
+#graph.set_entry_point("roteador")
 
 # Compila o grafo em um executor (cria um app pronto para .invoke)
 app = graph.compile()
@@ -342,12 +363,24 @@ if __name__ == "__main__":
     print("🤖 Ana Bolt - Agente conversacional sobre delivery da confeiria\n")
 
     # Estado de conversa persistente entre rodadas
-    state: dict = {}
+    #state: dict = {}
+    inicio_state = State(
+        resposta = "",
+        etapa = "",
+        produto_escolhido = "",
+        nome = "",
+        historico = "",
+        encerrar = False,
+        mensagem_usuario = "",
+    )
 
     # Primeira saudação
-    result = app.invoke(state)
-    state.update(result)
-    print(state.get("resposta", "Olá!"))
+    #result = app.invoke(state)
+    result = app.invoke(inicio_state)
+    #state.update(result)
+    #inicio_state.update(result)
+    #print(state.get("resposta", "Olá!"))
+    print(inicio_state.get("resposta", "Olá!"))
 
     while True:
         try:
@@ -361,12 +394,13 @@ if __name__ == "__main__":
             break
 
         # Preenche a última mensagem e invoca 1 passo do grafo
-        state["mensagem_usuario"] = mensagem
-        result = app.invoke(state)
-        state.update(result)
+        inicio_state["mensagem_usuario"] = mensagem
+        result = app.invoke(inicio_state)
+        #inicio_state.update()
+        #inicio_state.update(result)
 
-        print(f"\n🔎 Agente: {state.get('resposta', '')}")
+        print(f"\n🔎 Agente: {inicio_state.get('resposta', '')}")
 
-        if state.get("etapa") == "fim" or state.get("encerrar"):
+        if inicio_state.get("etapa") == "fim" or inicio_state.get("encerrar"):
             print("\nConversa encerrada.")
             break
