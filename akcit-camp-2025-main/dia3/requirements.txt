@@ -1,0 +1,15 @@
+redis
+requests
+pandas
+numpy
+python-dotenv
+google-generativeai
+crewai
+crewai[google-genai]
+chromadb
+reportlab
+streamlit
+langfuse
+litellm
+openinference-instrumentation-crewai
+openinference-instrumentation-litellm

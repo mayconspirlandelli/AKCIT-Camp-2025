@@ -148,7 +148,6 @@ def create_finance_crew(ticker: str, periodo: str, llm_provider: str = "gemini")
         verbose=True,
         allow_delegation=False,
         llm=llm,
-        max_rpm=1,
     )
 
     metrics_agent = Agent(
@@ -159,7 +158,6 @@ def create_finance_crew(ticker: str, periodo: str, llm_provider: str = "gemini")
         verbose=True,
         allow_delegation=False,
         llm=llm,
-        max_rpm=1,
     )
 
     insight_agent = Agent(
@@ -173,7 +171,6 @@ def create_finance_crew(ticker: str, periodo: str, llm_provider: str = "gemini")
         verbose=True,
         allow_delegation=False,
         llm=llm,
-        max_rpm=1,
     )
 
     advisor_agent = Agent(
@@ -188,7 +185,6 @@ def create_finance_crew(ticker: str, periodo: str, llm_provider: str = "gemini")
         verbose=True,
         allow_delegation=False,
         llm=llm,
-        max_rpm=1,
     )
 
     data_task = Task(
