@@ -59,12 +59,14 @@ with st.sidebar:
     # Seleção do modelo
     st.subheader("🤖 Modelo de IA")
     llm_provider = st.radio(
-        "Escolha o modelo:",
-        options=["openai", "gemini"],
+        "Escolha dentre os  modelo:",
+        options=["llama", "gemma", "openai", "gemini"],
         index=0,
         format_func=lambda x: {
+            "llama": "Llama 3.1:8b", 
+            "gemma": "Gemma 3:270m", 
             "openai": "🟢 OpenAI (GPT-4o-mini)",
-            "gemini": "🔵 Google Gemini Flash"
+            "gemini": "🔵 Google Gemini Flash 2.5",
         }[x]
     )
     

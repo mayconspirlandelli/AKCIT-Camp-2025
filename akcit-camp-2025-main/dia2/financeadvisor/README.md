@@ -97,7 +97,7 @@ REDIS_PORT=6379
 ### 5. Inicie o Redis com Docker
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 Isso iniciará o container Redis na porta 6379.
@@ -107,6 +107,7 @@ Isso iniciará o container Redis na porta 6379.
 docker ps
 ```
 
+
 ---
 
 ## 🎮 Como Rodar
@@ -114,7 +115,9 @@ docker ps
 ### Opção 1: Interface Web com Streamlit (Recomendado)
 
 ```bash
+#Fica na pasta raiz do projeto
 streamlit run streamlit_app.py
+
 ```
 
 O navegador abrirá automaticamente em `http://localhost:8501`
@@ -130,6 +133,11 @@ O navegador abrirá automaticamente em `http://localhost:8501`
 ### Opção 2: Uso Programático (Python)
 
 #### Análise de um único ticker:
+
+
+### Comando do Docker para corrigir erros
+docker compose build --no-cache app && docker compose up -d --force-recreate app
+
 
 ```python
 from financeadvisor.core.orchestrator import analyze

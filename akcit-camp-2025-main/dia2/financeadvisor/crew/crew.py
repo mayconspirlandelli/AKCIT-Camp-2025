@@ -57,7 +57,21 @@ def get_llm(provider: str = "gemini"):
             api_key=api_key,
             temperature=0.7,
         )
-    
+
+    elif provider == "llama":
+        return LLM(
+            model ="ollama/llama3.1:8b",
+            base_url="http://localhost:11434",
+            temperature=0.7,
+        )
+
+    elif provider == "gemma":
+        return LLM(
+            model ="ollama/gemma3:270m",
+            base_url="http://localhost:11434",
+            temperature=0.7,
+        )
+
     else:
         raise ValueError(f"Provider '{provider}' não suportado. Use 'gemini' ou 'openai'.")
 
