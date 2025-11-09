@@ -21,9 +21,13 @@ st.title("💰 Dividend Analyst")
 st.markdown("### Análise comparativa de dividendos com IA multi-agente")
 st.divider()
 
+#Ações de Teste Gratuitas
+#PETR4 (Petrobras) • MGLU3 (Magazine Luiza) • VALE3 (Vale) • ITUB4 (Itaú)
+
+
 # Lista de ações disponíveis (principais da B3)
 ACOES_DISPONIVEIS = [
-    "PETR4", "VALE3", "ITUB4", "BBDC4", "BBAS3",
+    "MGLU3", "PETR4", "VALE3", "ITUB4", "BBDC4", "BBAS3",
     "ABEV3", "B3SA3", "RENT3", "ELET3", "ENBR3",
     "WEGE3", "SUZB3", "RAIL3", "JBSS3", "EMBR3",
     "CPLE6", "TAEE11", "CMIG4", "CSAN3", "VIVT3"
@@ -38,7 +42,7 @@ with st.sidebar:
     tickers_selecionados = st.multiselect(
         "Escolha de 2 a 6 ações:",
         options=sorted(ACOES_DISPONIVEIS),
-        default=["PETR4", "VALE3", "ITUB4"],
+        default=["PETR4", "VALE3", "ITUB4", "MGLU3"],
         max_selections=6
     )
     

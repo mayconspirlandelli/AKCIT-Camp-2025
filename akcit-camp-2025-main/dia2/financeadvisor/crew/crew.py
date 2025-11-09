@@ -369,7 +369,7 @@ def create_multi_ticker_crew(tickers: list[str], periodo: str, llm_provider: str
         description=(
             f"1. Receba o ranking JSON da tarefa anterior "
             f"2. Use generate_dividend_pdf passando o ranking como 'content' "
-            f"3. Use o nome de arquivo 'ranking_dividendos_{periodo}.pdf' "
+            f"3. Use o nome de arquivo 'ranking_dividendos_{periodo}2.pdf' "
             f"4. Retorne a mensagem de sucesso com o caminho do arquivo"
         ),
         expected_output="Caminho do arquivo PDF gerado",

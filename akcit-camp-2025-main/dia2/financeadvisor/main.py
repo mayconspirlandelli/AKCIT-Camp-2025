@@ -2,7 +2,8 @@
 Finance Advisor - Dividend Analyst
 Análise multi-ticker de dividendos com geração de PDF
 """
-from .core.orchestrator import analyze_multi_tickers
+#from .core.orchestrator import analyze_multi_tickers
+from core.orchestrator import analyze_multi_tickers
 
 
 def main():
@@ -10,7 +11,9 @@ def main():
     
     # Configuração
     periodo = "1y"
-    llm_provider = "openai"  # ou "gemini"
+    #llm_provider = "openai"  # ou "gemini"
+
+    llm_provider = "gemma"
     
     # Combinações de análise
     carteiras = [
@@ -25,6 +28,11 @@ def main():
         {
             "nome": "Top Dividendos",
             "tickers": ["PETR4", "VALE3", "BBAS3"]
+        },
+        {
+            "nome": "Free",
+            #PETR4 (Petrobras) • MGLU3 (Magazine Luiza) • VALE3 (Vale) • ITUB4 (Itaú)
+            "tickers": ["PETR4", "MGLU3", "VALE3", "ITUB4"]
         }
     ]
     
